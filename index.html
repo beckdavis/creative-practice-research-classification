@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- viewport-fit=cover handles iPhone notch/safe-area correctly -->
+    <title>Research Classification Tool — Queensland College of Art and Design</title>
+    <meta name="description" content="A guided self-assessment tool to help QCAD staff determine whether their creative work qualifies as a research output, disciplinary scholarship, or professional practice.">
+    <meta property="og:title" content="Research Classification Tool — QCAD">
+    <meta property="og:description" content="Determine whether your creative work qualifies as a research output, disciplinary scholarship, or professional practice.">
+    <meta property="og:type" content="website">
+    <!-- Fonts with display=swap for fast loading in iframe -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════
+           TOKENS
+        ═══════════════════════════════════════════════ */
+        :root {
+            --sand:        #EAE7DC;
+            --tan:         #D8C3A5;
+            --tan-dark:    #B8A080;
+            --stone:       #7A7874;
+            --coral:       #E98074;
+            --terra:       #E85A4F;
+            --terra-dark:  #C94540;
+            --ink:         #2A2724;
+            --ink-mid:     #4A4440;
+            --cream:       #F3F0E8;
+            --cream-deep:  #EAE5D8;
+            --white:       #FDFCFA;
+            --shadow:      0 1px 4px rgba(42,39,36,.07), 0 3px 12px rgba(42,39,36,.08);
+            --shadow-lg:   0 2px 8px rgba(42,39,36,.07), 0 8px 28px rgba(42,39,36,.10);
+            --r:  10px;
+            --rs: 6px;
+
+            /* outcomes */
+            --ok:      #2A5C3F; --ok-bg:   #E8F5EC; --ok-mid:  #3A7A54;
+            --warn:    #7A4E10; --warn-bg: #FDF3E3; --warn-mid:#9A6518;
+            --risk:    #7A1E1E; --risk-bg: #FAEBEB; --risk-mid:#A02828;
+
+            /* print-safe high-contrast overrides (applied via .print-safe class at runtime) */
+            --print-yes: #1A4A2A;
+            --print-no:  #6A1010;
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html {
+            font-size: 16px;
+            /* Prevent iOS/Android from auto-scaling text in landscape */
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--sand);
+            padding-bottom: 32px;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            line-height: 1.6;
+            -webkit-tap-highlight-color: transparent;
+            /* Momentum scrolling on iOS Safari */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .wrap {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 14px;
+            /* Safe area insets for iPhone notch / Dynamic Island */
+            padding-left: max(14px, env(safe-area-inset-left));
+            padding-right: max(14px, env(safe-area-inset-right));
+        }
+        @media (min-width:500px) {
+            .wrap {
+                padding: 0 22px;
+                padding-left: max(22px, env(safe-area-inset-left));
+                padding-right: max(22px, env(safe-area-inset-right));
+            }
+        }
+
+        /* ─── HEADER ─────────────────────────────────── */
+        .hd {
+            padding: 16px 0 0;
+            margin-bottom: 8px;
+        }
+        .hd-eyebrow {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--stone);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0 6px;
+        }
+        .hd-sep { opacity:.45; }
+        .hd-school {
+            font-family: 'Lora', Georgia, 'Times New Roman', Times, serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--ink-mid);
+            margin-bottom: 2px;
+            letter-spacing: -.01em;
+        }
+        @media (min-width:500px) { .hd-school { font-size:16px; } }
+        .hd-title {
+            font-family: 'Lora', Georgia, 'Times New Roman', Times, serif;
+            font-size: 23px;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -.025em;
+            line-height: 1.18;
+        }
+        @media (min-width:500px) { .hd-title { font-size:27px; } }
+        .hd-rule {
+            margin-top: 11px;
+            height: 2px;
+            border-radius: 1px;
+            background: linear-gradient(90deg, var(--terra) 0%, var(--tan) 55%, transparent 100%);
+        }
+
+        /* ─── PROGRESS ───────────────────────────────── */
+        .prog-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0 13px;
+        }
+        .prog-pips {
+            display: flex;
+            gap: 4px;
+            flex: 1;
+        }
+        .pip {
+            flex: 1;
+            height: 3px;
+            background: var(--tan);
+            border-radius: 2px;
+            transition: background .3s ease;
+        }
+        .pip.done    { background: var(--terra); }
+        .pip.current { background: var(--coral); }
+        .prog-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--stone);
+            white-space: nowrap;
+        }
+
+        /* ─── CARD ───────────────────────────────────── */
+        .card {
+            background: var(--white);
+            border-radius: var(--r);
+            box-shadow: var(--shadow-lg);
+            padding: 24px 20px 20px;
+        }
+        @media (min-width:500px) { .card { padding:32px 30px 26px; } }
+
+        /* ─── QUESTION VIEW ──────────────────────────── */
+        .q-meta {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 10px;
+        }
+        .q-badge {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: var(--terra);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            display: flex; align-items:center; justify-content:center;
+            flex-shrink: 0;
+        }
+        .q-criterion {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--terra);
+        }
+
+        .q-text {
+            font-family: 'Lora', Georgia, 'Times New Roman', Times, serif;
+            font-size: 19px;
+            font-weight: 500;
+            line-height: 1.42;
+            color: var(--ink);
+            margin-bottom: 15px;
+        }
+        @media (min-width:500px) { .q-text { font-size:21px; } }
+
+        .help-box {
+            background: var(--cream);
+            border-left: 2px solid var(--tan-dark);
+            border-radius: 0 var(--rs) var(--rs) 0;
+            padding: 11px 14px;
+            margin-bottom: 14px;
+        }
+        .help-box p {
+            font-size: 13px;
+            color: var(--ink-mid);
+            line-height: 1.6;
+        }
+        .help-box a { color: var(--terra); font-weight:500; text-underline-offset:2px; }
+
+        /* evidence toggle */
+        .ev-btn {
+            display: flex; align-items: center; gap: 7px;
+            width: 100%; background: none;
+            border: 1px solid var(--tan);
+            border-radius: var(--rs);
+            padding: 9px 13px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            font-size: 12px; font-weight: 500;
+            color: var(--stone);
+            cursor: pointer;
+            transition: all .15s ease;
+            text-align: left;
+            touch-action: manipulation;
+            min-height: 42px;
+            margin-bottom: 3px;
+        }
+        .ev-btn:hover, .ev-btn.open {
+            border-color: var(--coral);
+            color: var(--ink-mid);
+            background: var(--cream);
+        }
+        .ev-chev { margin-left:auto; font-size:12px; transition:transform .25s ease; }
+        .ev-btn.open .ev-chev { transform:rotate(180deg); }
+
+        .ev-panel {
+            max-height: 0; overflow: hidden;
+            transition: max-height .35s cubic-bezier(.4,0,.2,1);
+            -webkit-transition: max-height .35s cubic-bezier(.4,0,.2,1);
+            margin-bottom: 3px;
+        }
+        .ev-panel.open { max-height: 580px; }
+        .ev-inner {
+            background: var(--cream);
+            border: 1px solid var(--tan); border-top: none;
+            border-radius: 0 0 var(--rs) var(--rs);
+            padding: 11px 14px 13px;
+        }
+        .ev-heading {
+            font-size: 10px; font-weight:600; letter-spacing:.9px;
+            text-transform: uppercase; color: var(--stone);
+            margin-bottom: 7px;
+        }
+        /* ev-tag removed — tags shown on accordion headers in results only */
+        .ev-inner ul { list-style:none; }
+        .ev-inner li {
+            font-size: 12.5px; color: var(--ink-mid);
+            padding: 5px 0 5px 15px;
+            position: relative; line-height:1.5;
+            border-bottom: 1px solid var(--tan);
+        }
+        .ev-inner li:last-child { border-bottom:none; }
+        .ev-inner li::before { content:"–"; position:absolute; left:1px; color:var(--coral); font-weight:500; }
+        .ev-copy {
+            background: #EEE8DE; border-left:2px solid var(--coral);
+            padding: 7px 10px; margin-top:5px;
+            border-radius: 0 var(--rs) var(--rs) 0;
+            font-size: 11.5px; color:var(--ink-mid); line-height:1.5;
+        }
+
+        /* ─── ANSWER BUTTONS ─────────────────────────── */
+        .answer-area { margin-top: 18px; }
+
+        .yn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .btn-yn {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            cursor: pointer; border-radius: var(--rs);
+            font-size: 14px; font-weight: 500;
+            padding: 12px 16px;
+            transition: all .15s ease;
+            touch-action: manipulation;
+            min-height: 48px;
+            display: flex; align-items:center; justify-content:center; gap:6px;
+            letter-spacing: .01em;
+        }
+        .btn-yes { background:var(--terra); color:white; border:2px solid var(--terra); }
+        .btn-yes:hover  { background:var(--terra-dark); border-color:var(--terra-dark); }
+        .btn-yes:active { transform:scale(.98); }
+        .btn-no  { background:transparent; color:var(--ink-mid); border:1.5px solid var(--tan); }
+        .btn-no:hover  { border-color:var(--stone); background:var(--cream); }
+        .btn-no:active { background:var(--cream-deep); transform:scale(.98); }
+
+        .choice-grid { display:flex; flex-direction:column; gap:7px; }
+        .btn-choice {
+            font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+            cursor:pointer; background:var(--white); color:var(--ink);
+            border:1.5px solid var(--tan); border-radius:var(--rs);
+            text-align:left; padding:12px 15px 12px 42px;
+            position:relative; transition:all .15s ease;
+            touch-action:manipulation; min-height:54px;
+        }
+        .btn-choice::before {
+            content:""; position:absolute; left:14px; top:50%; transform:translateY(-50%);
+            width:13px; height:13px; border-radius:50%;
+            border:1.5px solid var(--tan); transition:all .15s ease;
+        }
+        .btn-choice:hover { border-color:var(--coral); background:var(--cream); }
+        .btn-choice:hover::before { border-color:var(--terra); background:var(--terra); }
+        .btn-choice:active { transform:scale(.99); }
+        .c-label { font-size:13.5px; font-weight:500; display:block; }
+        .c-sub   { font-size:11.5px; color:var(--stone); font-weight:400; display:block; margin-top:2px; }
+
+        .nav-row {
+            display:flex; align-items:center; justify-content:space-between;
+            margin-top:18px; padding-top:15px;
+            border-top:1px solid var(--tan);
+        }
+        .btn-back {
+            background:none; border:none; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+            font-size:12px; font-weight:500; color:var(--stone);
+            cursor:pointer; padding:6px 0; display:flex; align-items:center; gap:5px;
+            transition:color .15s; min-height:36px; touch-action:manipulation;
+        }
+        .btn-back:hover { color:var(--ink); }
+        .btn-back.ghost { visibility:hidden; }
+        .time-note { font-size:11px; color:var(--stone); }
+
+        /* ═══════════════════════════════════════════════
+           RESULT VIEW
+        ═══════════════════════════════════════════════ */
+        #resultView { display:none; }
+        #resultView.visible { display:block; }
+
+        /* outcome banner */
+        .outcome-banner {
+            display:flex; align-items:flex-start; gap:14px;
+            padding:18px 20px; border-radius:var(--rs);
+            margin-bottom:20px; border:1.5px solid transparent;
+        }
+        .outcome-banner.likely   { background:var(--ok-bg);   border-color:var(--ok-mid);  }
+        .outcome-banner.possible { background:var(--warn-bg);  border-color:var(--warn-mid);}
+        .outcome-banner.unlikely { background:var(--risk-bg);  border-color:var(--risk-mid);}
+
+        .outcome-icon {
+            width:42px; height:42px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-size:17px; font-weight:700; flex-shrink:0;
+            margin-top:2px; color:white;
+        }
+        .likely   .outcome-icon { background:var(--ok); }
+        .possible .outcome-icon { background:var(--warn); }
+        .unlikely .outcome-icon { background:var(--risk); }
+
+        .outcome-tag {
+            font-size:10px; font-weight:600; letter-spacing:1.1px;
+            text-transform:uppercase; margin-bottom:3px;
+        }
+        .likely   .outcome-tag { color:var(--ok); }
+        .possible .outcome-tag { color:var(--warn); }
+        .unlikely .outcome-tag { color:var(--risk); }
+        .outcome-title {
+            font-family:'Lora',Georgia,'Times New Roman',Times,serif;
+            font-size:20px; font-weight:600; color:var(--ink); line-height:1.2;
+        }
+        @media (min-width:500px) { .outcome-title { font-size:23px; } }
+
+        .outcome-explanation {
+            font-size:13.5px; color:var(--ink-mid); line-height:1.65;
+            margin-bottom:22px; padding:13px 16px;
+            background:var(--cream); border-radius:var(--rs);
+            border-left:2px solid var(--tan-dark);
+        }
+
+        /* ── ANSWER SUMMARY — stacked cards, mobile-first ── */
+        .summary-head {
+            font-size: 10px; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase;
+            color: var(--stone);
+            margin-bottom: 8px;
+        }
+        .summary-list {
+            list-style: none;
+            border: 1px solid var(--tan);
+            border-radius: var(--rs);
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+        .summary-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--tan);
+            background: var(--white);
+        }
+        .summary-item:nth-child(even) { background: var(--cream); }
+        .summary-item:last-child { border-bottom: none; }
+        .summary-item-left {
+            flex: 1;
+            min-width: 0;
+        }
+        .summary-item-num {
+            font-size: 9px; font-weight: 700;
+            letter-spacing: .8px; text-transform: uppercase;
+            color: var(--stone);
+            margin-bottom: 1px;
+        }
+        .summary-item-label {
+            font-size: 13px; font-weight: 500;
+            color: var(--ink);
+            line-height: 1.3;
+        }
+        .summary-item-link {
+            font-size: 10.5px;
+            color: var(--stone);
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+        .summary-item-right {
+            flex-shrink: 0;
+        }
+
+        /* answer chips — high contrast for print */
+        .chip {
+            display: inline-flex; align-items:center; gap:4px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 4px;
+            padding: 3px 8px;
+            letter-spacing: .3px;
+            white-space: nowrap;
+        }
+        .chip-yes    { background:#C8EDD5; color:#1A4A2A; border:1.5px solid #7ABFA0; }
+        .chip-no     { background:#F5CBCB; color:#6A1010; border:1.5px solid #D98A8A; }
+        .chip-both   { background:#FDE8C4; color:#6A3A05; border:1.5px solid #D4A050; }
+        .chip-research  { background:#C8EDD5; color:#1A4A2A; border:1.5px solid #7ABFA0; }
+        .chip-professional { background:#F5CBCB; color:#6A1010; border:1.5px solid #D98A8A; }
+
+        /* ── NEXT STEPS — collapsible ────────────────── */
+        .toggle-section { margin-bottom: 22px; }
+        .toggle-head {
+            display: flex; align-items:center; gap:8px;
+            cursor: pointer; user-select:none;
+            padding: 12px 14px;
+            background: var(--cream);
+            border: 1px solid var(--tan);
+            border-radius: var(--rs);
+            transition: background .15s ease;
+            touch-action: manipulation;
+            min-height: 46px;
+        }
+        .toggle-head:hover { background:var(--cream-deep); }
+        .toggle-head-dot {
+            width:7px; height:7px; border-radius:50%;
+            background:var(--terra); flex-shrink:0;
+        }
+        .toggle-head-label {
+            font-family:'Lora',Georgia,'Times New Roman',Times,serif;
+            font-size:15px; font-weight:600; color:var(--ink);
+            flex:1;
+        }
+        .toggle-head-chev {
+            font-size:12px; color:var(--stone);
+            transition: transform .25s ease;
+        }
+        .toggle-section.open .toggle-head { border-radius:var(--rs) var(--rs) 0 0; border-bottom-color:transparent; }
+        .toggle-section.open .toggle-head-chev { transform:rotate(180deg); }
+        .toggle-body {
+            max-height:0; overflow:hidden;
+            transition:max-height .4s cubic-bezier(.4,0,.2,1);
+        }
+        .toggle-body.open { max-height:900px; }
+        .toggle-body-inner {
+            padding: 0 14px 14px;
+            background: var(--white);
+            border: 1px solid var(--tan);
+            border-top: none;
+            border-radius: 0 0 var(--rs) var(--rs);
+        }
+
+        .rec-list { list-style:none; padding-top:6px; }
+        .rec-list li {
+            display:flex; gap:9px;
+            padding:9px 0; border-bottom:1px solid var(--cream-deep);
+            font-size:13px; color:var(--ink-mid); line-height:1.55;
+        }
+        .rec-list li:last-child { border-bottom:none; }
+        .rec-dash { color:var(--coral); font-weight:600; flex-shrink:0; margin-top:1px; font-size:14px; }
+
+        /* ── EVIDENCE CHECKLIST ──────────────────────── */
+        .section-head {
+            display:flex; align-items:center; gap:8px;
+            font-family:'Lora',Georgia,'Times New Roman',Times,serif;
+            font-size:15px; font-weight:600; color:var(--ink);
+            margin-bottom:10px; padding-bottom:8px;
+            border-bottom:1px solid var(--tan);
+        }
+        .section-head-dot { width:7px; height:7px; border-radius:50%; background:var(--terra); flex-shrink:0; }
+        .section-intro {
+            font-size:12.5px; color:var(--stone);
+            margin-bottom:11px; line-height:1.55;
+        }
+
+        /* Checklist accordion — question links shown on each panel header */
+        .acc-item {
+            border:1px solid var(--tan); border-radius:var(--rs);
+            margin-bottom:6px; overflow:hidden;
+        }
+        .acc-head {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:11px 14px; cursor:pointer; background:var(--cream);
+            transition:background .15s; user-select:none;
+            touch-action:manipulation; min-height:46px;
+        }
+        .acc-head:hover { background:var(--cream-deep); }
+        .acc-head-left { display:flex; align-items:center; gap:8px; flex:1; }
+        .acc-icon { font-size:13px; }
+        .acc-name { font-size:13px; font-weight:500; color:var(--ink); }
+        .acc-count { font-size:10.5px; color:var(--stone); }
+        /* question link tags on accordion header */
+        .acc-q-tags { display:flex; gap:4px; flex-wrap:wrap; margin-left:6px; }
+        .acc-q-tag {
+            font-size:9px; font-weight:700; letter-spacing:.5px;
+            text-transform:uppercase; border-radius:3px;
+            padding:2px 5px; white-space:nowrap;
+        }
+        .acc-q-tag.yes  { background:#C8EDD5; color:#1A4A2A; border:1px solid #7ABFA0; }
+        .acc-q-tag.no   { background:#F5CBCB; color:#6A1010; border:1px solid #D98A8A; }
+        .acc-q-tag.na   { background:var(--cream-deep); color:var(--stone); border:1px solid var(--tan); }
+        .acc-chev { font-size:11px; color:var(--stone); transition:transform .25s ease; flex-shrink:0; }
+        .acc-item.open .acc-chev { transform:rotate(180deg); }
+
+        .acc-body { max-height:0; overflow:hidden; transition:max-height .38s cubic-bezier(.4,0,.2,1); }
+        .acc-item.open .acc-body { max-height:1100px; }
+        .acc-body-inner { padding:0 14px 13px; background:var(--white); }
+        .acc-body ul { list-style:none; }
+        .acc-body li {
+            font-size:12.5px; color:var(--ink-mid);
+            padding:7px 0 7px 15px; position:relative;
+            border-bottom:1px solid var(--sand); line-height:1.5;
+        }
+        /* The sand reference needs the variable defined */
+        .acc-body li { border-bottom-color:var(--cream-deep); }
+        .acc-body li:last-child { border-bottom:none; }
+        .acc-body li::before { content:"–"; position:absolute; left:1px; color:var(--tan-dark); font-weight:500; }
+        .acc-copy {
+            background:var(--cream); border-left:2px solid var(--coral);
+            padding:7px 10px; margin-top:5px;
+            border-radius:0 var(--rs) var(--rs) 0;
+            font-size:11.5px; color:var(--ink-mid); line-height:1.5;
+        }
+
+        /* notes */
+        .notes-section { margin-bottom:22px; }
+        .note-row {
+            display:flex; gap:9px; align-items:flex-start;
+            font-size:12.5px; color:var(--ink-mid); line-height:1.55;
+            padding:6px 0; border-bottom:1px solid var(--cream-deep);
+        }
+        .note-row:last-child { border-bottom:none; }
+        .note-dot { width:4px; height:4px; border-radius:50%; background:var(--tan-dark); flex-shrink:0; margin-top:8px; }
+
+        /* action buttons */
+        .action-row { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+        @media (min-width:400px) { .action-row { flex-direction:row; } }
+        .btn-action {
+            font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; cursor:pointer; border-radius:var(--rs);
+            font-size:13px; font-weight:500; padding:12px 18px;
+            display:flex; align-items:center; justify-content:center; gap:7px;
+            transition:all .15s ease; flex:1;
+            touch-action:manipulation; min-height:44px;
+        }
+        .btn-primary { background:var(--terra); color:white; border:2px solid var(--terra); }
+        .btn-primary:hover  { background:var(--terra-dark); border-color:var(--terra-dark); }
+        .btn-primary:active { transform:scale(.98); }
+        .btn-secondary { background:transparent; color:var(--ink-mid); border:1.5px solid var(--tan); }
+        .btn-secondary:hover  { border-color:var(--stone); background:var(--cream); }
+        .btn-secondary:active { transform:scale(.98); }
+
+        /* ─── ABOUT ───────────────────────────────────── */
+        .about-card {
+            background:var(--white); border-radius:var(--r);
+            box-shadow:var(--shadow); padding:20px;
+            margin-top:12px;
+        }
+        @media (min-width:500px) { .about-card { padding:24px 28px; } }
+        .about-toggle {
+            display:flex; align-items:center; justify-content:space-between;
+            cursor:pointer; user-select:none; touch-action:manipulation;
+        }
+        .about-toggle-lbl {
+            font-family:'Lora',Georgia,'Times New Roman',Times,serif;
+            font-size:14px; font-weight:600; color:var(--ink);
+        }
+        .about-chev { font-size:12px; color:var(--stone); transition:transform .25s; }
+        .about-toggle.open .about-chev { transform:rotate(180deg); }
+        .about-body { max-height:0; overflow:hidden; transition:max-height .4s cubic-bezier(.4,0,.2,1); }
+        .about-body.open { max-height:1600px; }
+        .about-body-inner { padding-top:15px; }
+        .about-notice {
+            background:var(--cream); border-left:2px solid var(--terra);
+            border-radius:0 var(--rs) var(--rs) 0;
+            padding:12px 14px; margin-bottom:15px;
+        }
+        .about-notice p { font-size:13px; color:var(--ink-mid); line-height:1.65; margin-bottom:8px; }
+        .about-notice p:last-child { margin-bottom:0; }
+        .about-notice a { color:var(--terra); font-weight:500; text-underline-offset:2px; }
+        .about-sub {
+            font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase;
+            color:var(--stone); margin:14px 0 5px;
+        }
+        .about-card p { font-size:13px; color:var(--ink-mid); line-height:1.6; }
+        .about-card ul { list-style:none; }
+        .about-card li {
+            font-size:12.5px; color:var(--ink-mid);
+            padding:6px 0 6px 13px; position:relative;
+            border-bottom:1px solid var(--cream-deep); line-height:1.5;
+        }
+        .about-card li:last-child { border-bottom:none; }
+        .about-card li::before { content:"–"; position:absolute; left:0; color:var(--coral); }
+        .about-card strong { color:var(--ink); font-weight:600; }
+
+        /* ─── TRANSITIONS ─────────────────────────────── */
+        .slide-fwd  { -webkit-animation: sFwd .22s cubic-bezier(.4,0,.2,1) both; animation: sFwd .22s cubic-bezier(.4,0,.2,1) both; }
+        .slide-back { -webkit-animation: sBack .22s cubic-bezier(.4,0,.2,1) both; animation: sBack .22s cubic-bezier(.4,0,.2,1) both; }
+        @-webkit-keyframes sFwd  { from{opacity:0;-webkit-transform:translateX(12px);transform:translateX(12px)} to{opacity:1;-webkit-transform:translateX(0);transform:translateX(0)} }
+        @keyframes sFwd  { from{opacity:0;transform:translateX(12px)} to{opacity:1;transform:translateX(0)} }
+        @-webkit-keyframes sBack { from{opacity:0;-webkit-transform:translateX(-12px);transform:translateX(-12px)} to{opacity:1;-webkit-transform:translateX(0);transform:translateX(0)} }
+        @keyframes sBack { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
+
+        :focus-visible { outline:2px solid var(--terra); outline-offset:2px; }
+
+        /* ─── PRINT ───────────────────────────────────── */
+        @media print {
+            body { background:white; }
+            .hd-rule, .prog-row, #questionView, .about-card,
+            .action-row { display:none !important; }
+            .wrap { max-width:100%; padding:0; }
+            .card { box-shadow:none; border-radius:0; padding:14px; }
+            #resultView { display:block !important; }
+            /* force open all collapsibles */
+            .acc-body, .toggle-body, .about-body { max-height:none !important; display:block !important; }
+            .summary-list { border:1px solid #ccc !important; }
+            .acc-item { break-inside:avoid; }
+            /* high contrast chips for print */
+            .chip-yes, .acc-q-tag.yes   { background:#A8D8BA !important; color:#0A2A18 !important; }
+            .chip-no,  .acc-q-tag.no    { background:#F0AAAA !important; color:#4A0808 !important; }
+            .chip-both, .chip-research   { background:#A8D8BA !important; }
+            .chip-professional           { background:#F0AAAA !important; color:#4A0808 !important; }
+            .outcome-banner { border-width:2px !important; }
+            @page { size:A4; margin:2cm; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <!-- ── HEADER ─────────────────────────────── -->
+    <header class="hd">
+        <div class="hd-eyebrow">
+            <span>Griffith University</span>
+            <span class="hd-sep">·</span>
+            <span>Arts, Education &amp; Law</span>
+        </div>
+        <div class="hd-school">Queensland College of Art and Design</div>
+        <div class="hd-title">Research Classification Tool</div>
+        <div class="hd-rule"></div>
+    </header>
+
+    <!-- ── PROGRESS ──────────────────────────── -->
+    <div class="prog-row" id="progRow">
+        <div class="prog-pips" id="progPips"></div>
+        <span class="prog-label" id="progLabel">1 of 6</span>
+    </div>
+
+    <!-- ── MAIN CARD ─────────────────────────── -->
+    <div class="card">
+
+        <!-- Question view -->
+        <div id="qView">
+            <div id="qContent" class="slide-fwd">
+                <div class="q-meta">
+                    <span class="q-badge" id="qNum">1</span>
+                    <span class="q-criterion" id="qLabel">Research Criterion</span>
+                </div>
+                <h2 class="q-text" id="qText"></h2>
+                <div class="help-box"><p id="helpText"></p></div>
+
+                <button class="ev-btn" id="evBtn">
+                    <span>📋</span>
+                    <span id="evBtnLabel">Evidence examples</span>
+                    <span class="ev-chev">▾</span>
+                </button>
+                <div class="ev-panel" id="evPanel">
+                    <div class="ev-inner">
+                        <div class="ev-heading" id="evHeading"></div>
+                        <ul id="evList"></ul>
+                    </div>
+                </div>
+
+                <div class="answer-area" id="answerArea"></div>
+            </div>
+
+            <div class="nav-row">
+                <button class="btn-back ghost" id="backBtn">← Back</button>
+                <span class="time-note" id="timeNote">~5–10 min</span>
+            </div>
+        </div>
+
+        <!-- Result view -->
+        <div id="resultView">
+
+            <!-- Outcome banner -->
+            <div id="outcomeBanner" class="outcome-banner">
+                <div class="outcome-icon" id="outcomeIcon"></div>
+                <div>
+                    <div class="outcome-tag" id="outcomeTag"></div>
+                    <div class="outcome-title" id="outcomeTitle"></div>
+                </div>
+            </div>
+
+            <p class="outcome-explanation" id="outcomeExplanation"></p>
+
+            <!-- Answer summary — replaces dot grid -->
+            <p class="summary-head">Your Responses</p>
+            <ul class="summary-list" id="summaryBody"></ul>
+
+            <!-- Next Steps — collapsible -->
+            <div class="toggle-section" id="nextStepsSection">
+                <div class="toggle-head" id="nextStepsHead">
+                    <span class="toggle-head-dot"></span>
+                    <span class="toggle-head-label">Next Steps</span>
+                    <span class="toggle-head-chev">▾</span>
+                </div>
+                <div class="toggle-body" id="nextStepsBody">
+                    <div class="toggle-body-inner">
+                        <ul class="rec-list" id="recList"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evidence Checklist — always open, primary output -->
+            <div style="margin-bottom:22px;">
+                <div class="section-head">
+                    <span class="section-head-dot"></span>
+                    Evidence Collection Checklist
+                </div>
+                <p class="section-intro">Each category below is tagged to show which of your responses it is most relevant to. Use this as a working list when preparing documentation for your supervisor discussion.</p>
+                <div id="accContainer"></div>
+            </div>
+
+            <!-- Important notes -->
+            <div class="notes-section">
+                <div class="section-head">
+                    <span class="section-head-dot"></span>
+                    Important Notes
+                </div>
+                <div id="notesList"></div>
+            </div>
+
+            <div class="action-row">
+                <button class="btn-action btn-primary" id="restartBtn">↺ New Assessment</button>
+                <button class="btn-action btn-secondary" id="printBtn">⎙ Save / Print</button>
+            </div>
+
+        </div><!-- /resultView -->
+    </div><!-- /card -->
+
+    <!-- About card -->
+    <div class="about-card" id="aboutCard">
+        <div class="about-toggle" id="aboutToggle">
+            <span class="about-toggle-lbl">About This Tool</span>
+            <span class="about-chev">▾</span>
+        </div>
+        <div class="about-body" id="aboutBody">
+            <div class="about-body-inner">
+                <div class="about-notice">
+                    <p>This tool helps art and design academics and HDR candidates prepare for conversations with their Academic Supervisor or Deputy Head of School/Director (Research) about whether their creative work has research dimensions.</p>
+                    <p><strong>Important:</strong> Your responses guide discussion — they don't determine outcomes. Your supervisor makes final classifications in consultation with you. This tool assists in determining if your creative work should be uploaded to the Griffith University <a href="https://griffith.figshare.com/" target="_blank" rel="noopener noreferrer">Creative Works</a> repository or recorded using other categories in <a href="https://blogs.griffith.edu.au/library/2025/11/13/enhance-your-griffith-experts-profile-with-a-single-click/" target="_blank" rel="noopener noreferrer">Symplectic Elements</a>.</p>
+                    <p>Based on ERA (Excellence in Research for Australia) frameworks. Work that does not meet research criteria may still constitute significant <strong>disciplinary scholarship</strong> or <strong>professional practice</strong>, both of which are recorded in Symplectic Elements as non-research creative outputs and are valued parts of your academic profile.</p>
+                </div>
+                <div class="about-sub">Tool Development</div>
+                <p>Developed by Rebekah Davis, Griffith University, using Claude (Anthropic) as a research and development assistant. Reflects current Australian research assessment frameworks and institutional best practices.</p>
+                <div class="about-sub">Sources</div>
+                <ul>
+                    <li><strong>Excellence in Research for Australia (ERA)</strong> — National framework for assessing research quality, including NTROs</li>
+                    <li><strong>University of Melbourne Library</strong> — Research Output Checklists for Fine Arts and Music</li>
+                    <li><strong>University of Queensland Library</strong> — UQ eSpace guidelines for Original Creative Works and NTRO submissions</li>
+                    <li><strong>University of Newcastle Library</strong> — Copyright guidance for Non-Traditional Research Outputs</li>
+                    <li><strong>Response to DDCA Draft Recommendations</strong> — Academic perspectives on improving evaluation frameworks for creative practice research</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /wrap -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   DATA
+   Each question has a `checklistLinks` array naming which evidence
+   checklist categories are most relevant — used to tag accordion headers.
+═══════════════════════════════════════════════════════════════════ */
+const questions = [
+    {
+        id: 'newKnowledge', label: 'New Knowledge',
+        checklistLinks: ['Publications & Documentation', 'Output Details'],
+        question: 'Does your project create or communicate new knowledge, understanding, or insights?',
+        help: 'Research must go beyond professional practice to generate new knowledge. Consider: Are you exploring new ideas, methods, or perspectives? Does it advance understanding in your field?',
+        type: 'yesno',
+        examples: {
+            title: 'Evidence Examples — New Knowledge',
+            items: [
+                { text: 'Research statement articulating the knowledge contribution', tag: 'Publications & Documentation' },
+                { text: 'Exhibition catalogue with critical essay explaining conceptual framework', tag: 'Publications & Documentation' },
+                { text: 'Artist/designer statement positioning work within theoretical discourse', tag: 'Publications & Documentation' },
+                { text: 'Documentation showing how work advances or challenges existing practices', tag: 'Output Details' },
+                { text: 'Published interviews or articles discussing the research dimensions', tag: 'Publications & Documentation' },
+                { text: 'Conference presentations or peer-reviewed publications about the work', tag: 'Publications & Documentation' },
+                { text: '⚖ Copyright note: Ensure you retain rights to use your research statement and documentation for research purposes' }
+            ]
+        }
+    },
+    {
+        id: 'systematicInquiry', label: 'Systematic Inquiry',
+        checklistLinks: ['Output Details'],
+        question: 'Does your project involve systematic or rigorous inquiry and investigation?',
+        help: 'Research involves deliberate, structured exploration. Consider: Is there a clear research question or creative problem? Are you testing ideas or exploring concepts methodically?',
+        type: 'yesno',
+        examples: {
+            title: 'Evidence Examples — Systematic Inquiry',
+            items: [
+                { text: 'Documentation of iterative design/creative process and development', tag: 'Output Details' },
+                { text: 'Research journal or sketchbooks showing conceptual evolution', tag: 'Output Details' },
+                { text: 'Series of works exploring a specific concept or methodology', tag: 'Output Details' },
+                { text: 'Portfolio demonstrating coherent research trajectory', tag: 'Publications & Documentation' },
+                { text: 'Process documentation (photographs, videos, prototypes)', tag: 'Output Details' },
+                { text: 'Written methodology explaining your research approach', tag: 'Publications & Documentation' },
+                { text: '⚖ Copyright note: Clarify ownership of process documentation and obtain permission for use in perpetuity on the Creative Works repository' }
+            ]
+        }
+    },
+    {
+        id: 'researchStatement', label: 'Research Statement',
+        checklistLinks: ['Publications & Documentation'],
+        question: 'Can you articulate the research contribution in a research statement?',
+        help: 'You should be able to clearly explain what knowledge your work generates, how it contributes to the field, the methods/methodology used, and the significance. See the <a href="https://griffitheduau.sharepoint.com/sites/QCA_Community/SitePages/Research.aspx" target="_blank" rel="noopener noreferrer">QCAD Community Research page — including guidance on Research Statements</a>.',
+        type: 'yesno',
+        examples: {
+            title: 'What to Include in a Research Statement',
+            items: [
+                { text: 'Clear articulation of research question or creative inquiry', tag: 'Publications & Documentation' },
+                { text: 'Description of methodology and systematic approach', tag: 'Publications & Documentation' },
+                { text: 'Explanation of how work contributes new knowledge to the field', tag: 'Publications & Documentation' },
+                { text: 'Positioning within existing scholarship and creative practices', tag: 'Publications & Documentation' },
+                { text: 'Discussion of significance and reach (Substantial or Focused)', tag: 'Reach & Impact' },
+                { text: 'Connection between practice and theoretical frameworks', tag: 'Publications & Documentation' },
+                { text: 'Background, contribution and significance of the work', tag: 'Publications & Documentation' }
+            ]
+        }
+    },
+    {
+        id: 'peerReview', label: 'Peer Review',
+        checklistLinks: ['Peer Review & Validation'],
+        question: 'Has your project undergone or will it undergo peer review or expert validation?',
+        help: 'This includes: competitive selection for exhibitions/festivals, peer-reviewed journals/conferences, juried competitions, prestigious venue acceptance, or expert panel evaluation.',
+        type: 'yesno',
+        examples: {
+            title: 'Evidence Examples — Peer Review',
+            items: [
+                { text: 'Competitive selection for exhibitions at galleries/museums (invitation letters, jury selection)', tag: 'Peer Review & Validation' },
+                { text: 'Acceptance to juried festivals or biennales', tag: 'Peer Review & Validation' },
+                { text: 'Peer-reviewed scholarly audiovisual journals or conferences', tag: 'Peer Review & Validation' },
+                { text: 'Prestigious venue selection (national/international standing, peer recognition in field)', tag: 'Peer Review & Validation' },
+                { text: 'Awards, nominations, or prizes from expert panels', tag: 'Peer Review & Validation' },
+                { text: 'Commissions from recognised institutions or editorial groups', tag: 'Funding & Recognition' },
+                { text: 'Substantial reviews by peers in academic journals, national/international press', tag: 'Peer Review & Validation' },
+                { text: 'Inclusion in curated exhibitions with established curators', tag: 'Peer Review & Validation' },
+                { text: 'Note: Venue quality is assessed via institutional reputation, competitive selection, and disciplinary recognition' }
+            ]
+        }
+    },
+    {
+        id: 'disciplinaryContext', label: 'Disciplinary Context',
+        checklistLinks: ['Publications & Documentation', 'Reach & Impact'],
+        question: 'Does your project build on and contribute to existing disciplinary knowledge?',
+        help: 'Research is situated within a field. Consider: Does it engage with existing scholarship, creative practices, or theoretical frameworks? Does it advance discourse in your discipline?',
+        type: 'yesno',
+        examples: {
+            title: 'Evidence Examples — Disciplinary Context',
+            items: [
+                { text: 'Citations in exhibition catalogues, artist statements, or publications', tag: 'Publications & Documentation' },
+                { text: 'References to relevant theoretical frameworks or scholarly discourse', tag: 'Publications & Documentation' },
+                { text: 'Engagement with historical precedents in the field', tag: 'Publications & Documentation' },
+                { text: 'Your work being cited by other scholars or practitioners', tag: 'Reach & Impact' },
+                { text: 'Inclusion in academic syllabi or reading lists', tag: 'Reach & Impact' },
+                { text: 'Publications in peer-reviewed journals in your discipline', tag: 'Publications & Documentation' },
+                { text: 'Presentations at academic conferences or symposia', tag: 'Publications & Documentation' },
+                { text: 'Collaboration with other researchers in the field', tag: 'Output Details' }
+            ]
+        }
+    },
+    {
+        id: 'professionalPractice', label: 'Nature of Practice',
+        checklistLinks: ['Funding & Recognition', 'Copyright & Ownership'],
+        question: 'How would you primarily characterise the nature of this work?',
+        help: 'Creative and design practice in Australian universities sits across a valued spectrum. <em>Research</em> generates new knowledge through systematic inquiry and qualifies as a research output (NTRO/ERA eligible). <em>Disciplinary scholarship</em> — sometimes called scholarly practice, professional practice, or creative practice — demonstrates expert knowledge, advances the field, and may inform teaching and industry; it is recorded in Symplectic Elements under non-research categories and is equally important to your academic profile. <em>Professional practice</em> is client- or commission-driven work that demonstrates skill and expertise without a foregrounded research agenda. Only the first category qualifies as a research output, but all three are recognised contributions.',
+        type: 'choice',
+        options: [
+            { value: 'research',     label: 'Research / practice-as-research',        sub: 'Systematic inquiry generating new knowledge; ERA/NTRO eligible' },
+            { value: 'both',         label: 'Disciplinary scholarship with research dimensions', sub: 'Advances the field and includes identifiable research components' },
+            { value: 'professional', label: 'Professional practice or disciplinary scholarship', sub: 'Expert creative/design practice; recorded in Symplectic Elements as non-research' }
+        ],
+        examples: {
+            title: 'Understanding the Practice Spectrum in Australian Universities',
+            items: [
+                { text: 'Practice-as-research / Research: Generates new knowledge, subject to peer review, supported by a research statement — ERA/NTRO eligible', tag: 'Publications & Documentation' },
+                { text: 'Disciplinary scholarship / Scholarly practice: Advances disciplinary knowledge and professional discourse; may inform curriculum and industry; recorded in Symplectic Elements as non-research creative output', tag: 'Publications & Documentation' },
+                { text: 'Professional practice: Demonstrates expert skill; commissioned, commercial, or client-driven work without a foregrounded research agenda', tag: 'Funding & Recognition' },
+                { text: 'Key question: Can you articulate what new knowledge this work generates — and for whom — beyond demonstrating professional expertise or advancing disciplinary discourse?' },
+                { text: 'Note: Work classified as disciplinary scholarship or professional practice still contributes to your academic profile and should be recorded appropriately in Symplectic Elements', tag: 'Publications & Documentation' },
+                { text: '⚖ Copyright note: Commissioned or industry-partnered work may involve shared ownership — review client and funding agreements to retain rights for documentation and future research use' }
+            ]
+        }
+    }
+];
+
+/* checklist-to-question mapping: which questions map to each category */
+const checklistQuestionMap = {
+    'Output Details':              ['newKnowledge', 'systematicInquiry'],
+    'Peer Review & Validation':    ['peerReview'],
+    'Reach & Impact':              ['disciplinaryContext', 'researchStatement'],
+    'Publications & Documentation':['newKnowledge', 'researchStatement', 'disciplinaryContext'],
+    'Funding & Recognition':       ['professionalPractice', 'peerReview'],
+    'Copyright & Ownership':       ['professionalPractice']
+};
+
+const evidenceCategories = [
+    { icon: '📄', name: 'Output Details', items: [
+        { text: 'Title and description of work/exhibition/project' },
+        { text: 'Medium, format, and scale' },
+        { text: 'Dates and locations (physical/online)' },
+        { text: 'Collaborators and their roles (clarify individual contributions and ownership)' },
+        { text: 'High-quality process documentation (photographs, videos, recordings, sketchbooks)' },
+        { text: '⚖ Distinguish between the output itself and its representation (e.g., artwork vs photograph of artwork)' },
+        { text: '⚖ If documentation was created by others, obtain written permission to use for research purposes' }
+    ]},
+    { icon: '🔍', name: 'Peer Review & Validation', items: [
+        { text: 'Exhibition/festival selection details and jury information' },
+        { text: 'Invitation letters or acceptance notifications' },
+        { text: 'Reviews in print or online publications' },
+        { text: 'Expert testimonials or evaluations' },
+        { text: 'Awards, nominations, prizes (with prestige indicators)' }
+    ]},
+    { icon: '📊', name: 'Reach & Impact', items: [
+        { text: 'Visitor/attendance numbers' },
+        { text: 'Box office or ticket sales data' },
+        { text: 'Online views/streams/downloads (YouTube, Vimeo, Soundcloud, etc.)' },
+        { text: 'Social media mentions and shares' },
+        { text: 'Website visitor statistics' },
+        { text: 'Library holdings (Trove, WorldCat, institutional libraries)' },
+        { text: 'Citations in Google Scholar or other academic databases' },
+        { text: 'Note: Reach and impact are supplementary evidence — they strengthen, but do not by themselves establish, research status' }
+    ]},
+    { icon: '📚', name: 'Publications & Documentation', items: [
+        { text: 'Research statement (required for all research outputs)' },
+        { text: 'Exhibition catalogues (publication details, citations, sales)' },
+        { text: 'Programme notes and accompanying texts' },
+        { text: 'Artist/designer statement positioning work within scholarly discourse' },
+        { text: 'Abstract/description of work (~100 words for public view)' },
+        { text: 'Peer-reviewed articles or chapters about the work' },
+        { text: 'Interviews and media coverage (ArtsHub, The Conversation, Pursuit, Precinct, etc.)' },
+        { text: 'Portfolio of related works demonstrating coherent research trajectory' },
+        { text: '⚖ Check publication agreements — do you retain rights for open access/research purposes?' },
+        { text: '⚖ Track any third-party materials used and ensure proper permissions/licences' }
+    ]},
+    { icon: '🏆', name: 'Funding & Recognition', items: [
+        { text: 'Grants and their prestige/competitive nature' },
+        { text: 'Commissions and commissioning body reputation' },
+        { text: 'Royalties and sales data' },
+        { text: 'Sponsorships from recognised organisations' },
+        { text: 'Touring exhibition details and venues' },
+        { text: '⚖ Review funding and commission agreements for ownership clauses and usage rights' }
+    ]},
+    { icon: '⚖', name: 'Copyright & Ownership', items: [
+        { text: 'Maintain records of ownership: Do you own the copyright, or was it assigned through employment/publication/funding agreements?' },
+        { text: 'Document permissions: Keep written permission for any third-party materials used (images, text, music, video, code)' },
+        { text: 'Track representations: If others created documentation, record their ownership and obtain usage permissions' },
+        { text: 'Open licensing: Where possible, use Creative Commons or open-licenced materials and document attribution requirements' },
+        { text: 'Multiple copyright layers: For audio/video/digital works, identify all copyright holders' },
+        { text: 'Moral rights: Ensure proper attribution of all creators and contributors' },
+        { text: 'IP: For inventions, patents, designs, or commercial applications, you may need to assign IP to your institution while retaining copyright in written research outputs' }
+    ]}
+];
+
+const importantNotes = [
+    'This tool provides guidance only and is not a formal classification.',
+    'Always consult with your Academic Supervisor and/or Deputy Head of School/Director (Research) for official determination.',
+    'Research statements are required for all research outputs.',
+    'Peer review by experts with closely aligned disciplinary expertise is critical.',
+    'Professional practice, disciplinary scholarship, and research are all recognised contributions to your academic profile — they serve different purposes and are recorded differently in institutional systems.',
+    'Keep systematic records of all evidence from the beginning of your project.',
+    'Be aware of copyright implications: track ownership of outputs and representations, obtain permissions for third-party materials, and review all agreements.',
+    "Understand Griffith's IP policy if your work involves inventions, patents, designs, or potential commercialisation."
+];
+
+/* ═══════════════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════════════ */
+let step = 0, answers = {}, dir = 'fwd';
+
+/* ═══════════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════════ */
+function init() {
+    buildPips();
+    showQuestion();
+    document.getElementById('backBtn').addEventListener('click', goBack);
+    document.getElementById('evBtn').addEventListener('click', toggleEvidence);
+    document.getElementById('restartBtn').addEventListener('click', restart);
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+    // Next Steps toggle
+    document.getElementById('nextStepsHead').addEventListener('click', () => {
+        const sec = document.getElementById('nextStepsSection');
+        const body = document.getElementById('nextStepsBody');
+        sec.classList.toggle('open');
+        body.classList.toggle('open');
+    });
+    // About toggle
+    document.getElementById('aboutToggle').addEventListener('click', () => {
+        document.getElementById('aboutToggle').classList.toggle('open');
+        document.getElementById('aboutBody').classList.toggle('open');
+    });
+}
+
+function buildPips() {
+    const c = document.getElementById('progPips');
+    c.innerHTML = '';
+    questions.forEach((_, i) => {
+        const p = document.createElement('div');
+        p.className = 'pip'; p.id = `pip${i}`;
+        c.appendChild(p);
+    });
+}
+
+function updateProgress() {
+    document.getElementById('progLabel').textContent = `${step + 1} of ${questions.length}`;
+    questions.forEach((_, i) => {
+        const el = document.getElementById(`pip${i}`);
+        el.className = 'pip' + (i < step ? ' done' : i === step ? ' current' : '');
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   QUESTION
+═══════════════════════════════════════════════════════════════════ */
+function showQuestion() {
+    const q = questions[step];
+    updateProgress();
+    document.getElementById('qNum').textContent = step + 1;
+    document.getElementById('qLabel').textContent = q.label;
+    document.getElementById('qText').textContent = q.question;
+    document.getElementById('helpText').innerHTML = q.help;
+    document.getElementById('timeNote').textContent = step === 0 ? '~5–10 min' : '';
+
+    // Reset evidence panel
+    document.getElementById('evPanel').classList.remove('open');
+    document.getElementById('evBtn').classList.remove('open');
+    document.getElementById('evBtnLabel').textContent = 'Evidence examples';
+
+    // Evidence list — items now have optional tag property
+    document.getElementById('evHeading').textContent = q.examples.title;
+    const list = document.getElementById('evList');
+    list.innerHTML = '';
+    q.examples.items.forEach(item => {
+        const text = typeof item === 'string' ? item : item.text;
+        const tag  = typeof item === 'object' ? item.tag : null;
+        if (text.startsWith('⚖')) {
+            const d = document.createElement('div');
+            d.className = 'ev-copy';
+            d.textContent = text.replace('⚖ ', '');
+            list.appendChild(d);
+        } else {
+            const li = document.createElement('li');
+            li.textContent = text;
+            // tag intentionally not shown here — appears on checklist accordion headers
+            list.appendChild(li);
+        }
+    });
+
+    // Answer area
+    const area = document.getElementById('answerArea');
+    area.innerHTML = '';
+    if (q.type === 'yesno') {
+        const g = document.createElement('div');
+        g.className = 'yn-group';
+        const yes = document.createElement('button');
+        yes.className = 'btn-yn btn-yes';
+        yes.innerHTML = '<span>✓</span> Yes';
+        yes.onclick = () => answer(q.id, 'yes');
+        const no = document.createElement('button');
+        no.className = 'btn-yn btn-no';
+        no.innerHTML = '<span>✗</span> No';
+        no.onclick = () => answer(q.id, 'no');
+        g.appendChild(yes); g.appendChild(no);
+        area.appendChild(g);
+    } else {
+        const grid = document.createElement('div');
+        grid.className = 'choice-grid';
+        q.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-choice';
+            btn.innerHTML = `<span class="c-label">${opt.label}</span><span class="c-sub">${opt.sub}</span>`;
+            btn.onclick = () => answer(q.id, opt.value);
+            grid.appendChild(btn);
+        });
+        area.appendChild(grid);
+    }
+
+    document.getElementById('backBtn').className = step === 0 ? 'btn-back ghost' : 'btn-back';
+    const content = document.getElementById('qContent');
+    content.className = dir === 'fwd' ? 'slide-fwd' : 'slide-back';
+    void content.offsetWidth;
+}
+
+function toggleEvidence() {
+    const p = document.getElementById('evPanel');
+    const b = document.getElementById('evBtn');
+    const l = document.getElementById('evBtnLabel');
+    const open = p.classList.toggle('open');
+    b.classList.toggle('open', open);
+    l.textContent = open ? 'Hide examples' : 'Evidence examples';
+}
+
+function answer(qId, val) {
+    answers[qId] = val;
+    dir = 'fwd';
+    if (step < questions.length - 1) { step++; showQuestion(); }
+    else showResult();
+}
+
+function goBack() {
+    if (step > 0) { delete answers[questions[step].id]; step--; dir = 'back'; showQuestion(); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESULT
+═══════════════════════════════════════════════════════════════════ */
+function showResult() {
+    document.getElementById('qView').style.display = 'none';
+    document.getElementById('progRow').style.display = 'none';
+
+    const yesCount = Object.entries(answers)
+        .filter(([k, v]) => k !== 'professionalPractice' && v === 'yes').length;
+    const practice = answers.professionalPractice;
+
+    let tier, outcomeTitle, explanation, recs;
+
+    if (yesCount === 5 && (practice === 'research' || practice === 'both')) {
+        tier = 'likely'; outcomeTitle = 'Likely Research Output';
+        explanation = 'Your project demonstrates strong research characteristics and appears eligible as a research output. The work shows evidence of new knowledge creation, systematic inquiry, peer review, and disciplinary contribution. Proceed with developing your formal documentation and consult your supervisor to confirm classification.';
+        recs = [
+            'Develop a comprehensive research statement clearly articulating the knowledge contribution',
+            'Ensure appropriate peer review processes are in place or planned',
+            'Document your methodology and research process thoroughly',
+            'Gather evidence: exhibition details, peer review documentation, visitor numbers, reviews, and citations',
+            'Consider submitting to peer-reviewed venues or scholarly outlets in your field',
+            'Maintain systematic records using the evidence checklist below',
+            'Address copyright early: clarify ownership, obtain permissions, and review all agreements',
+            'Consult with your institutional research office for formal classification'
+        ];
+    } else if (yesCount >= 3 && practice !== 'professional') {
+        tier = 'possible'; outcomeTitle = 'Possible Research Output';
+        explanation = 'Your project has research elements but may need strengthening in some areas to qualify as a research output. Review the questions where you answered "No" and consider how you might develop those aspects before proceeding with formal classification.';
+        recs = [
+            'Review the questions where you answered "No" and consider if you can develop these aspects',
+            'Strengthen the articulation of your research contribution and new knowledge',
+            'Seek peer review opportunities through competitive selection or expert validation',
+            'Engage more explicitly with existing scholarship in your field',
+            'Draft a research statement to clarify the research dimensions',
+            'Start collecting evidence now: document your process, gather reviews, track impact metrics',
+            'Consider copyright implications: ensure you have rights to use documentation',
+            'Consult with experienced research colleagues or your research office for guidance'
+        ];
+    } else {
+        tier = 'unlikely'; outcomeTitle = 'Unlikely Research Output';
+        explanation = 'Based on your responses, this project may not currently meet the criteria for a formal research output (NTRO/ERA eligible). This does not diminish its value — it may be significant disciplinary scholarship, scholarly practice, or professional practice, all of which are recognised contributions to your academic profile and the field. These categories are recorded in Symplectic Elements as non-research creative outputs. If you wish to develop this work toward a research output in the future, the Evidence Collection Checklist below suggests what to document from the outset.';
+        recs = [
+            'Record this work appropriately in Symplectic Elements as a non-research creative output — disciplinary scholarship and professional practice are both valued parts of your academic profile',
+            'Consider whether this work constitutes disciplinary scholarship (advancing knowledge and discourse in your field) or professional practice (demonstrating expert skill); both are legitimate and distinct from research',
+            'Reflect on the core question: What new knowledge does this work generate through systematic inquiry — and can you articulate this in a research statement?',
+            'If you wish to develop future work toward a research output, begin engaging with theoretical frameworks and existing scholarship in your field from the outset',
+            'Plan for peer review processes in future projects (competitive selection, expert validation)',
+            'Discuss with your supervisor or Director (Research) how this work best fits your academic profile and workload plan',
+            'Explore whether this work could inform an engagement or impact case under future national research evaluation frameworks'
+        ];
+    }
+
+    // Outcome banner
+    const banner = document.getElementById('outcomeBanner');
+    banner.className = 'outcome-banner ' + tier;
+    const iconMap = { likely:'✓', possible:'◑', unlikely:'○' };
+    document.getElementById('outcomeIcon').textContent = iconMap[tier];
+    document.getElementById('outcomeTag').textContent = 'Classification Outcome';
+    document.getElementById('outcomeTitle').textContent = outcomeTitle;
+    document.getElementById('outcomeExplanation').textContent = explanation;
+
+    // Answer summary — stacked card list
+    const tbody = document.getElementById('summaryBody');
+    tbody.innerHTML = '';
+    questions.forEach((q, i) => {
+        const val = answers[q.id];
+        let chipClass, chipText;
+        if (q.type === 'choice') {
+            chipClass = val === 'research' ? 'chip chip-research' : val === 'both' ? 'chip chip-both' : 'chip chip-professional';
+            chipText  = val === 'research' ? 'Research' : val === 'both' ? 'Scholarship + Research' : 'Scholarship / Practice';
+        } else {
+            chipClass = val === 'yes' ? 'chip chip-yes' : 'chip chip-no';
+            chipText  = val === 'yes' ? '✓ Yes' : '✗ No';
+        }
+        const links = q.checklistLinks.join(' · ');
+        const li = document.createElement('li');
+        li.className = 'summary-item';
+        li.innerHTML = `
+            <div class="summary-item-left">
+                <div class="summary-item-num">Q${i+1}</div>
+                <div class="summary-item-label">${q.label}</div>
+                <div class="summary-item-link">${links}</div>
+            </div>
+            <div class="summary-item-right">
+                <span class="${chipClass}">${chipText}</span>
+            </div>`;
+        tbody.appendChild(li);
+        // row complete
+    });
+
+    // Next Steps (collapsed by default — user opens if needed)
+    const recList = document.getElementById('recList');
+    recList.innerHTML = '';
+    recs.forEach(r => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="rec-dash">–</span><span>${r}</span>`;
+        recList.appendChild(li);
+    });
+
+    // Evidence accordion — tagged with which questions relate
+    const accC = document.getElementById('accContainer');
+    accC.innerHTML = '';
+    evidenceCategories.forEach(cat => {
+        const relatedQIds = checklistQuestionMap[cat.name] || [];
+        // Build tags showing answer for each related question
+        const tagHTML = relatedQIds.map(qId => {
+            const q = questions.find(q => q.id === qId);
+            const val = answers[qId];
+            let cls = 'na', label = q ? q.label : qId;
+            if (val === 'yes' || val === 'research') cls = 'yes';
+            else if (val === 'no' || val === 'professional') cls = 'no';
+            else if (val === 'both') cls = 'yes';
+            return `<span class="acc-q-tag ${cls}" title="${label}: ${val || 'n/a'}">${label}</span>`;
+        }).join('');
+
+        const item = document.createElement('div');
+        item.className = 'acc-item';
+        const head = document.createElement('div');
+        head.className = 'acc-head';
+        head.innerHTML = `
+            <div class="acc-head-left">
+                <span class="acc-icon">${cat.icon}</span>
+                <span class="acc-name">${cat.name}</span>
+                <span class="acc-count">${cat.items.length} items</span>
+                <div class="acc-q-tags">${tagHTML}</div>
+            </div>
+            <span class="acc-chev">▾</span>`;
+
+        const body = document.createElement('div');
+        body.className = 'acc-body';
+        const inner = document.createElement('div');
+        inner.className = 'acc-body-inner';
+        const ul = document.createElement('ul');
+        cat.items.forEach(itm => {
+            const text = typeof itm === 'string' ? itm : itm.text;
+            if (text.startsWith('⚖')) {
+                const d = document.createElement('div');
+                d.className = 'acc-copy';
+                d.textContent = text.replace('⚖ ', '');
+                ul.appendChild(d);
+            } else {
+                const li = document.createElement('li');
+                li.textContent = text;
+                ul.appendChild(li);
+            }
+        });
+        inner.appendChild(ul); body.appendChild(inner);
+        item.appendChild(head); item.appendChild(body);
+        accC.appendChild(item);
+        head.addEventListener('click', () => {
+            const was = item.classList.contains('open');
+            document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
+            if (!was) item.classList.add('open');
+        });
+    });
+
+    // Notes
+    const notesList = document.getElementById('notesList');
+    notesList.innerHTML = '';
+    importantNotes.forEach(n => {
+        const d = document.createElement('div');
+        d.className = 'note-row';
+        d.innerHTML = `<span class="note-dot"></span><span>${n}</span>`;
+        notesList.appendChild(d);
+    });
+
+    document.getElementById('resultView').classList.add('visible');
+}
+
+function restart() {
+    step = 0; answers = {}; dir = 'fwd';
+    document.getElementById('resultView').classList.remove('visible');
+    document.getElementById('qView').style.display = 'block';
+    document.getElementById('progRow').style.display = 'flex';
+    // close next steps
+    document.getElementById('nextStepsSection').classList.remove('open');
+    document.getElementById('nextStepsBody').classList.remove('open');
+    showQuestion();
+}
+
+init();
+
+// ── Notion iframe height reporting ──────────────────────────
+// Sends content height to parent frame after each view change
+// so Notion can resize the embed block automatically when resized manually.
+function reportHeight() {
+    const h = document.documentElement.scrollHeight;
+    try {
+        window.parent.postMessage({ type: 'notion-embed-height', height: h }, '*');
+    } catch(e) {}
+}
+// Report on load and after answer/result transitions
+const _origAnswer = answer;
+answer = function(qId, val) {
+    _origAnswer(qId, val);
+    setTimeout(reportHeight, 350);
+};
+const _origShowResult = showResult;
+showResult = function() {
+    _origShowResult();
+    setTimeout(reportHeight, 350);
+};
+const _origRestart = restart;
+restart = function() {
+    _origRestart();
+    setTimeout(reportHeight, 350);
+};
+// Also fire on accordion open/close
+document.addEventListener('click', () => setTimeout(reportHeight, 420));
+window.addEventListener('load', reportHeight);
+setTimeout(reportHeight, 500);
+</script>
+</body>
+</html>
